@@ -1,0 +1,6 @@
+{
+  "globals": {
+    "mode": "strict"
+  },
+  "collectCoverageFrom" : ["src/**/*.{js}"]
+}

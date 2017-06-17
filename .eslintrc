@@ -1,0 +1,36 @@
+{
+  "parser": "babel-eslint",
+  "env": {
+    "jest": true
+  },
+  "globals": {
+    "mode": true
+  },
+  "extends": "airbnb-base",
+  "rules": {
+    "consistent-return": "warn",
+    "no-void": "off",
+    "no-new-func": "off",
+    "no-restricted-syntax": "off",
+    "new-parens": "warn",
+    "arrow-parens": [
+      "error",
+      "as-needed"
+    ],
+    "func-names": "off",
+    "curly": [
+      "error",
+      "multi-line"
+    ],
+    "max-len": [
+      "error",
+      {
+        "ignoreComments": true,
+        "ignoreStrings": true,
+        "ignoreTemplateLiterals": true,
+        "code": 100
+      }
+    ],
+    "no-param-reassign": "off"
+  }
+}
