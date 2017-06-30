@@ -10,6 +10,7 @@
   "rules": {
     "consistent-return": "warn",
     "no-void": "off",
+    "no-confusing-arrow": "off",
     "no-new-func": "off",
     "no-restricted-syntax": "off",
     "new-parens": "warn",

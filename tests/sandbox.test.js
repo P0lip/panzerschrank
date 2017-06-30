@@ -57,4 +57,9 @@ test('sandbox handles arguments correctly', () => {
     arguments[0] = 2;
     return arguments[0];
   }, [5])).toEqual(2);
+  const arr = [2];
+  sandbox(function (d) {
+    d.push(4);
+  }, [arr]);
+  expect(arr).toEqual([2]);
 });
