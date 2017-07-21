@@ -6,7 +6,6 @@
   "globals": {
     "mode": true
   },
-  "extends": "airbnb-base",
   "rules": {
     "consistent-return": "warn",
     "no-void": "off",
@@ -51,6 +50,8 @@
     "no-lone-blocks": "error",
     "no-useless-concat": "error",
     "no-sparse-arrays": "error",
+    "no-empty": "warn",
+    "no-use-before-define": "off",
     "max-params": [
       "error",
       4
