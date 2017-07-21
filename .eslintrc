@@ -32,6 +32,33 @@
         "code": 100
       }
     ],
-    "no-param-reassign": "off"
+    "no-param-reassign": "off",
+    "no-undefined": "error",
+    "eqeqeq": [
+      "error",
+      "always"
+    ],
+    "no-undef-init": "error",
+    "dot-notation": "error",
+    "no-caller": "error",
+    "no-alert": "error",
+    "no-eval": "warn",
+    "no-extend-native": "error",
+    "no-eq-null": "error",
+    "no-extra-bind": "error",
+    "no-implicit-coercion": "error",
+    "no-with": "error",
+    "no-lone-blocks": "error",
+    "no-useless-concat": "error",
+    "no-sparse-arrays": "error",
+    "max-params": [
+      "error",
+      4
+    ],
+    "complexity": [
+      "warn",
+      3
+    ],
+    "prefer-const": "error"
   }
 }
