@@ -1,4 +1,5 @@
 import { hasMonkeyPatchedProp } from './utils';
+import env from './env';
 
 export default class {
   constructor() {
@@ -27,7 +28,7 @@ export default class {
 
   getSerializer(target) {
     if (this.missed.has(target.constructor)) return;
-    if (mode === 'strict' && hasMonkeyPatchedProp(target) === true) {
+    if (env.isStrict === true && hasMonkeyPatchedProp(target) === true) {
       throw new TypeError('Target has a monkey patched property');
     }
 

@@ -1,4 +1,6 @@
-export default [{
-  constructor: Date,
-  serializer(date) { return new Date(date); },
-}];
+export default [
+  {
+    constructor: Date,
+    serializer: date => new Date(date),
+  },
+];

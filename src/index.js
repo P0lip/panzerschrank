@@ -1,10 +1,7 @@
-import clone from './clone';
+import clone, { internal } from './clone';
 import Serializers from './serializers';
-import { isNonPrimitive } from './utils';
 import sandbox from './sandbox';
-
-const internal = Symbol('internal');
-const mutable = new WeakSet();
+import env from './env';
 
 const traps = {
   get(target, prop) {
@@ -13,16 +10,7 @@ const traps = {
       return prop[Symbol.iterator];
     }
 
-    const value = target[internal].get(prop);
-    if (isNonPrimitive(value) === true) {
-      if (mutable.has(target) === true) {
-        return value.ref;
-      }
-
-      return value.value;
-    }
-
-    return value;
+    return target[internal].get(prop);
   },
 
   has(target, prop) {
@@ -30,12 +18,12 @@ const traps = {
   },
 
   deleteProperty(target, prop) {
-    if (mutable.has(target) === true) {
+    if (target[internal].mutable === true) {
       target[internal].delete(prop);
       return true;
     }
 
-    if (mode === 'strict') {
+    if (env.isStrict === true) {
       throw new TypeError(`Can't delete property ${prop}`);
     }
 
@@ -49,34 +37,67 @@ const traps = {
       return true;
     }
 
-    if (mode === 'strict') {
+    if (env.isStrict === true) {
       throw new TypeError(`Can't add/mutate property ${prop}, object is not extensible/mutable`);
     }
 
     return false;
   },
+
+  defineProperty(target, prop, descriptor) {
+    // todo: how to deal with this?
+    // like it was setter? dunno, as what if descriptor is non-enumerable, non-writable etc?
+  },
+
+  apply(target, thisArg, argumentsList) {
+    try {
+      target[internal].mutable = true;
+      sandbox(argumentsList[0], [target, argumentsList.slice(1)]); // todo shall we pass serializers here?
+    } catch (ex) {}
+    target[internal].mutable = false;
+  },
+
+  ownKeys() {
+    return [];
+  },
+
+  getOwnPropertyDescriptor(target, prop) {
+    if (prop === Symbol.iterator) {
+      return {
+        writable: false,
+        configurable: false,
+        enumerable: false,
+        value: target[Symbol.iterator],
+      };
+    }
+
+    if (env.isJest === true && prop === 'internal') {
+      return {
+        writable: false,
+        configurable: false,
+        enumerable: false,
+        value: internal,
+      };
+    }
+  }
 };
 
 export default function (obj, serializers) {
   const map = new Map(Object.entries(clone(obj, serializers)));
 
-  let proxy;
-
-  function mute(func, ...args) {
-    mutable.add(mute);
-    try {
-      sandbox(func, [proxy, ...args]);
-    } catch (ex) {
-      /* let's continue anyway :) */
-    }
-
-    mutable.delete(mute);
-  }
-
-  Object.defineProperty(mute, internal, { value: map });
-  mute[Symbol.iterator] = map[Symbol.iterator].bind(map);
-  proxy = new Proxy(mute, traps);
-  return proxy;
+  const proxy = () => {};
+  Object.defineProperties(proxy, {
+    [internal]: {
+      value: {
+        map,
+        mutable,
+      },
+    },
+    [Symbol.iterator]: {
+      value: map[Symbol.iterator].bind(map),
+    },
+  });
+  return new Proxy(proxy, traps);
 }
 
 export { Serializers };

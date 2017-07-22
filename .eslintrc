@@ -3,9 +3,6 @@
   "env": {
     "jest": true
   },
-  "globals": {
-    "mode": true
-  },
   "rules": {
     "consistent-return": "warn",
     "no-void": "off",

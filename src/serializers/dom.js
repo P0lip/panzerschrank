@@ -1,14 +1,14 @@
 /* global Window, Document, Node */
 export default [
   {
-    constructor: Window,
+    constructor: typeof Window !== 'undefined' && Window,
     instance(obj) {
       return obj instanceof Node;
     },
-    serializer(pass) { return pass; },
+    serializer: pass => pass,
   },
   {
-    constructor: Document,
-    serializer(pass) { return pass; },
+    constructor: typeof Document !== 'undefined' && Document,
+    serializer: pass => pass,
   },
 ];

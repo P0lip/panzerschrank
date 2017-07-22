@@ -1,4 +1,4 @@
-import { isObject } from './utils';
+import { isNonPrimitive } from './utils';
 
 const traps = {
   has: () => true,
@@ -14,13 +14,21 @@ const traps = {
 };
 
 function materializeArguments(args) {
-  return args.map(arg => isObject(arg) === true ? JSON.parse(JSON.stringify(arg)) : arg);
+  return args.map(arg => {
+    if (typeof arg === 'function') {
+      return sandbox(arg);
+    }
+
+    if (isNonPrimitive(arg) === true) return arg;
+
+    return JSON.parse(JSON.stringify(arg));
+  });
 }
 
-export default function(func, args = []) {
+export default function sandbox(func, args = []) {
   const sandboxedFunc = Function(
     's',
     `with(s){return(${func.toString()}).apply(this,arguments)}`,
   );
   return sandboxedFunc(new Proxy([this, ...materializeArguments(args)], traps));
-};
+}

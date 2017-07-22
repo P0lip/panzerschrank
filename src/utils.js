@@ -1,3 +1,5 @@
+import env from './env';
+
 export function isNative(func) {
   /* istanbul ignore if */
   const sourceCode = Function.toString.call(func);
@@ -13,10 +15,6 @@ export function isNative(func) {
   }
 }
 
-export function assert(assertion) {
-  if (assertion === false) throw new Error('Assertion failed');
-}
-
 export function isNativeDescriptor(obj, prop) {
   const descriptor = Object.getOwnPropertyDescriptor(obj, prop);
   if (('value' in descriptor) === true) {
@@ -27,16 +25,15 @@ export function isNativeDescriptor(obj, prop) {
     return true;
   }
 
-  let native = true;
   if (typeof descriptor.get === 'function') {
-    native = isNative(descriptor.get);
+    if (isNative(descriptor.get) === false) return false;
   }
 
-  if (native === true && typeof descriptor.set === 'function') {
-    native = isNative(descriptor.set);
+  if (typeof descriptor.set === 'function') {
+    return isNative(descriptor.set);
   }
 
-  return native;
+  return true;
 }
 
 export function hasMonkeyPatchedProp(target) {
@@ -82,7 +79,7 @@ export function hasMonkeyPatchedProp(target) {
 }
 
 export function toArray(iterable) {
-  if (mode === 'strict' && isNative(iterable[Symbol.iterator]) === false) {
+  if (env.isStrict === true && isNative(iterable[Symbol.iterator]) === false) {
     throw new TypeError(`${iterable.name} has a monkey-patched iterator!`);
   }
 
@@ -93,8 +90,12 @@ export function isObject(obj) {
   return obj !== void 0 && obj !== null && typeof obj === 'object';
 }
 
+export function isNonPrimitive(target) {
+  return typeof target !== 'function' && isObject(target) === false;
+}
+
 export function isObjectLiteral(obj) {
-  if (obj === null || obj === void 0) return false;
+  if (isNonPrimitive(obj) === true) return false;
   if (obj[Symbol.toStringTag] !== void 0) {
     const proto = Object.getPrototypeOf(obj);
     return proto === null || proto === Object.prototype;
@@ -103,6 +104,7 @@ export function isObjectLiteral(obj) {
   return {}.toString.call(obj) === '[object Object]';
 }
 
-export function isNonPrimitive(target) {
-  return isObject(target) === true || typeof target === 'function';
+
+export function getType() {
+
 }

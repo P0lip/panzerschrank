@@ -4,8 +4,8 @@
   "description": "Panzerschrank - a safe vault for your data",
   "main": "./sloppy.js",
   "scripts": {
-    "test": "jest --config=jest.config.json --coverage ./tests",
-    "lint": "eslint ./src",
+    "test": "jest --cache --config=jest/config.json ./tests",
+    "lint": "eslint --cache ./src",
     "install": "NODE_ENV=development rollup -c && NODE_ENV=production rollup -c"
   },
   "repository": {

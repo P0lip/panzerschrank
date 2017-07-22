@@ -2,8 +2,5 @@
 .directory
 node_modules
 coverage/
-benchmark/
-strict.js
-strict.js.map
-sloppy.js
-sloppy.js.map
+.cache/
+.eslintcache
