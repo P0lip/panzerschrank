@@ -1,4 +1,4 @@
-import sandbox from '../src/sandbox';
+import sandbox from 'src/sandbox';
 
 describe('Sandbox', () => {
   test('executes func', () => {

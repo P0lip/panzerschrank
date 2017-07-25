@@ -1,4 +1,4 @@
-import index from '../src/index';
+import index from 'src/index';
 
 test('it works <3', () => {
   const obj = { foo: 'bar', bar: false, lelz: 'true' };

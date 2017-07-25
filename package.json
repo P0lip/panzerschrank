@@ -39,11 +39,16 @@
   },
   "jest": {
     "collectCoverageFrom": [
-      "src/**/*.{js}"
+      "src/**/*.js"
     ],
     "collectCoverage": true,
     "cacheDirectory": ".cache/",
-    "setupFiles": [],
+    "modulePaths": [
+      "<rootDir>"
+    ],
+    "moduleFileExtensions": [
+      "js"
+    ],
     "testEnvironment": "node"
   }
 }

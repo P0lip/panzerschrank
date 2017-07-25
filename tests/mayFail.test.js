@@ -1,4 +1,4 @@
-import mayFail from '../src/mayFail';
+import mayFail from 'src/mayFail';
 
 describe('mayFail', () => {
   test('returns proper value when no exception is thrown', () => {

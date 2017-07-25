@@ -1,16 +1,14 @@
-import vault from '../../src/index';
-import Serializers from '../../src/serializers';
-import date from '../../src/serializers/date';
-import compare from '../compare';
+import Serializers from 'src/serializers';
+import date from 'src/serializers/date';
+import { compare } from 'jest/helpers';
 
 const serializers = new Serializers();
 serializers.registerSerializers(date);
 
-test('clones properly', () => {
-  [
-    { c: true, arr: new Date() },
-  ].forEach(obj => {
-    compare(vault(obj, serializers), obj);
+describe('Date serializer', () => {
+  test('clones properly', () => {
+    compare([
+      { c: true, arr: new Date() },
+    ]);
   });
 });
-

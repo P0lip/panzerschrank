@@ -1,4 +1,4 @@
-import diff from '../src/diff';
+import diff from 'src/diff';
 
 describe('Diff', () => {
   test('works', () => { // todo: different cases for each type to make it more clear

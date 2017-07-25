@@ -6,75 +6,90 @@ import {
   hasMonkeyPatchedProp,
   assert,
   getType,
-} from '../src/utils';
+} from 'src/utils';
 
-test('isObject() returns true if object is passed', () => {
-  expect(isObject(new Map())).toBe(true);
-  expect(isObject({})).toBe(true);
-  expect(isObject([])).toBe(true);
+describe('#isObject', () => {
+  test('returns true if object is passed', () => {
+    expect(isObject(new Map())).toBe(true);
+    expect(isObject({})).toBe(true);
+    expect(isObject([])).toBe(true);
+  });
+
+  test('returns false if null is passed', () => {
+    expect(isObject(null)).toBe(false);
+  });
+
+  test('returns false if object isn\'t passed', () => {
+    expect(isObject()).toBe(false);
+    expect(isObject(() => {})).toBe(false);
+    expect(isObject(false)).toBe(false);
+  });
 });
 
-test('isObject() returns false if null is passed', () => {
-  expect(isObject(null)).toBe(false);
+describe('#isObjectLiteral', () => {
+  test('returns true if object literal is passed', () => {
+    expect(isObjectLiteral({})).toBe(true);
+    const obj = {
+      get [Symbol.toStringTag]() {
+        return 'Wrong String Tag';
+      },
+    };
+
+    expect(isObjectLiteral(obj)).toBe(true);
+  });
+
+  test('returns false if object literal isn\'t passed', () => {
+    expect(isObjectLiteral(null)).toBe(false);
+    expect(isObjectLiteral(new WeakSet())).toBe(false);
+    expect(isObjectLiteral(Promise)).toBe(false);
+    expect(isObjectLiteral([])).toBe(false);
+    expect(isObjectLiteral()).toBe(false);
+    expect(isObjectLiteral(false)).toBe(false);
+  });
 });
 
-test('isObject() returns false if object isn\'t passed', () => {
-  expect(isObject()).toBe(false);
-  expect(isObject(() => {})).toBe(false);
-  expect(isObject(false)).toBe(false);
+describe('#toArray', () => {
+  test('returns an array if iterable is passed', () => {
+    expect(toArray([])).toEqual([]);
+    expect(toArray(new Map([['test', true]]).keys())).toEqual(['test']);
+  });
+
+  test('throws when monkey-patched iterable is passed', () => {
+    const arr = [];
+    arr[Symbol.iterator] = function* () {
+      yield;
+    };
+
+    try {
+      toArray(arr);
+    } catch (ex) {
+      expect(ex).toBeInstanceOf(TypeError);
+    }
+  });
 });
 
-test('isObjectLiteral() returns true if object literal is passed', () => {
-  expect(isObjectLiteral({})).toBe(true);
-  const obj = {
-    get [Symbol.toStringTag]() {
-      return 'Wrong String Tag';
-    },
-  };
+describe('#isNative', () => {
+  test('returns true if function is native', () => {
+    expect(isNative(Array.prototype.forEach)).toBe(true);
+    expect(isNative(Object.keys)).toBe(true);
+    expect(isNative(Object.keys.bind(Object))).toBe(true);
+  });
 
-  expect(isObjectLiteral(obj)).toBe(true);
+  test('returns false if function isn\'t native', () => {
+    expect(isNative(() => {})).toBe(false);
+  });
 });
 
-test('isObjectLiteral() returns false if object literal isn\'t passed', () => {
-  expect(isObjectLiteral(null)).toBe(false);
-  expect(isObjectLiteral(new WeakSet())).toBe(false);
-  expect(isObjectLiteral(Promise)).toBe(false);
-  expect(isObjectLiteral([])).toBe(false);
-  expect(isObjectLiteral()).toBe(false);
-  expect(isObjectLiteral(false)).toBe(false);
+describe('#assert', () => {
+  test('throws on false condition', () => {
+    expect(() => assert(false)).toThrow();
+  });
+
+  test('doesn\'t throw on true condition', () => {
+    expect(() => assert(true)).not.toThrow();
+  });
 });
 
-test('toArray() returns an array if iterable is passed', () => {
-  expect(toArray([])).toEqual([]);
-  expect(toArray(new Map([['test', true]]).keys())).toEqual(['test']);
-});
-
-test('toArray() throws when monkey-patched iterable is passed', () => {
-  const arr = [];
-  arr[Symbol.iterator] = function* () {
-    yield;
-  };
-
-  try {
-    toArray(arr);
-  } catch (ex) {
-    expect(ex).toBeInstanceOf(TypeError);
-  }
-});
-
-test('isNative() returns true if function is native', () => {
-  expect(isNative(Array.prototype.forEach)).toBe(true);
-  expect(isNative(Object.keys)).toBe(true);
-  expect(isNative(Object.keys.bind(Object))).toBe(true);
-});
-
-test('isNative() returns false if function isn\'t native', () => {
-  expect(isNative(() => {})).toBe(false);
-});
-
-test('assert() throws', () => {
-  expect(() => assert(false)).toThrow();
-});
 
 test('hasMonkeyPatchedProp() works', () => {
   let arr = [];

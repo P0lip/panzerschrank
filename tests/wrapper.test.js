@@ -1,6 +1,6 @@
-import proxy from '../src/wrapper'
-import Serializers from '../src/serializers';
-import array from '../src/serializers/array';
+import proxy from 'src/wrapper'
+import Serializers from 'src/serializers';
+import array from 'src/serializers/array';
 
 const mySerializers = new Serializers();
 mySerializers.registerSerializers(array);
