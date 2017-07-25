@@ -7,9 +7,17 @@ describe('Sandbox', () => {
     })).toBe(5);
 
     expect(sandbox(() => 5)).toBe(5);
+
     expect(sandbox(function test() {
       return 5;
     })).toBe(5);
+  });
+
+  test('recurrence is possible', () => {
+    expect(sandbox(function test(i = 0) {
+      if (i === 2) return true;
+      return test(i + 1);
+    }), []).toBe(true);
   });
 
   test('has a separated scope', () => {
@@ -20,6 +28,7 @@ describe('Sandbox', () => {
     } catch (ex) {
       expect(ex).toBeInstanceOf(TypeError);
     }
+
     try { // .toThrow doesn't work as expected
       const d = 5;
       sandbox(() => d);
@@ -40,39 +49,56 @@ describe('Sandbox', () => {
       d = 4;
       return 4;
     }, [2])).toEqual(4);
+
     expect(sandbox(function (d) {
       arguments[0] = 2;
       return d;
     }, [5])).toEqual(2);
+
     expect(sandbox(function (d) {
       'use strict';
       arguments[0] = 2;
       return d;
     }, [5])).toEqual(5);
-    const x = 2;
-    expect(sandbox((d = x) => d)).toBe(undefined);
+
+    {
+      const x = 2;
+      expect(sandbox((d = x) => d)).toBe(undefined);
+    }
+
     expect(sandbox(function (d) {
       arguments[0] = 2;
       return arguments[0];
     }, [5])).toEqual(2);
-    const arr = [2];
-    sandbox(d => {
-      d.push(4);
-    }, [arr]);
-    expect(arr).toEqual([2]);
 
-    const x = {};
-    const c = { x: true };
-    sandbox((obj, obj2) => {
-      obj.a = obj2;
-    }, [x, c]);
-    expect(x.a).toEqual(c);
-    c.x = false;
-    expect(x.a).not.toEqual(c);
-    let y = 4;
-    sandbox((d, c) => {
-       c(d);
-    }, [10, (x) => { y = x; }]);
-    expect(y).toBe(y);
+    {
+      const arr = [2];
+      sandbox(d => {
+        d.push(4);
+      }, [arr]);
+      expect(arr).toEqual([2]);
+    }
+
+    {
+      const foo = {};
+      const bar = { x: true };
+      sandbox((obj, obj2) => {
+        obj.a = obj2;
+      }, [foo, bar]);
+      expect(foo.a).toBeUndefined();
+
+      bar.x = false;
+      expect(foo.a).not.toEqual(bar);
+    }
+
+    {
+      let y = 4;
+      sandbox((d, c) => {
+        c(d);
+      }, [10, function (x) {
+        y = x;
+      }]);
+      expect(y).toBe(4);
+    }
   });
 });

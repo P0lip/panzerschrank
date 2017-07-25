@@ -1,7 +1,0 @@
-{
-  "collectCoverageFrom" : ["src/**/*.{js}"],
-  "collectCoverage": true,
-  "cacheDirectory": ".cache/",
-  "setupFiles": [],
-  "testEnvironment": "node"
-}

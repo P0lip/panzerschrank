@@ -10,7 +10,7 @@ export default class {
 
   registerSerializer({ constructor, serializer, instance }) {
     if (this.serializers.has(constructor) === true) {
-      throw new Error();
+      console.warn('Overwriting already existing constructor');
     }
 
     this.serializers.set(constructor, serializer);

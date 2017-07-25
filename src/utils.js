@@ -1,9 +1,13 @@
 import env from './env';
 
+export function assert(assertion) {
+  if (assertion === false) throw new Error('Assertion failed');
+}
+
 export function isNative(func) {
   /* istanbul ignore if */
-  const sourceCode = Function.toString.call(func);
-  if (sourceCode === Function.toString.call(func.bind(null))) {
+  const sourceCode = Reflect.apply(Function.toString, func, []);
+  if (sourceCode === Reflect.apply(Function.toString, func.bind(null), [])) {
     return true;
   }
 
@@ -105,6 +109,14 @@ export function isObjectLiteral(obj) {
 }
 
 
-export function getType() {
-
+export function getType(sth) { // TODO: is any runtime method exposed method for this?
+  const type = typeof sth;
+  if (sth === null) return 'null';
+  if (type === 'function') {
+    return isNative(sth) === true ? 'native-function' : type;
+  }
+  if (type !== 'object') return type;
+  if (Array.isArray(sth) === true) return 'array';
+  if (isObjectLiteral(sth) === true) return 'object-literal';
+  return 'object';
 }

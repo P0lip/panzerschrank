@@ -57,6 +57,8 @@
       "warn",
       3
     ],
-    "prefer-const": "error"
+    "prefer-const": "error",
+    "no-console": "error",
+    "no-debugger": "error"
   }
 }

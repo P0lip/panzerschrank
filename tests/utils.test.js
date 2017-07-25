@@ -5,6 +5,7 @@ import {
   isNative,
   hasMonkeyPatchedProp,
   assert,
+  getType,
 } from '../src/utils';
 
 test('isObject() returns true if object is passed', () => {
@@ -90,4 +91,9 @@ test('hasMonkeyPatchedProp() works', () => {
   expect(hasMonkeyPatchedProp(arr)).toBe(true);
   arr.push = [].push;
   expect(hasMonkeyPatchedProp(arr)).toBe(false);
+});
+
+test('getType()', () => {
+  expect(getType(true)).toBe('boolean');
+  expect(getType(false)).toBe('boolean');
 });

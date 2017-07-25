@@ -1,8 +1,7 @@
-import { isNonPrimitive, isObject } from './utils';
+import { isNonPrimitive } from './utils';
 import Serializers from './serializers';
 import knownSerializers from './serializers/index';
 import Wrapper from './wrapper';
-import GenericWrapper from './generic';
 
 export const internal = Symbol('internal');
 
@@ -16,23 +15,27 @@ export default (prev, serializers = defaultSerializers) => {
   const next = {};
   for (let i = 0; i < keys.length; i += 1) {
     const key = keys[i];
-    if (isObject(prev[key]) === true) {
-      const adapter = serializers !== void 0 && serializers.getSerializer(prev[key]);
-      const wrapped = typeof adapter !== 'function' ?
-        new Wrapper(prev[key], adapter, serializers) :
-        new GenericWrapper(prev[key]);
+    if (isNonPrimitive(prev[key]) === false) {
+      const wrapped = new Wrapper(
+        prev[key],
+        serializers !== void 0 && serializers.getSerializer(prev[key]),
+      );
 
       Object.defineProperty(next, key, {
         configurable: true,
         enumerable: true,
         writable: true,
         get() {
-          if (this[internal].mutable === true) {
-            return wrapped.ref;
-          }
-
           return wrapped.value;
         },
+        set(newValue) {
+          if (this[internal].mutable === true) {
+            wrapped.value = newValue;
+            return true;
+          }
+
+          return false;
+        }
       });
     } else {
       next[key] = prev[key];

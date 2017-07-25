@@ -2,7 +2,7 @@ import vault from '../../src/index';
 import Serializers from '../../src/serializers';
 import array from '../../src/serializers/array';
 import object from '../../src/serializers/object';
-import compare from '../compare';
+import compare from '../../src/diff';
 
 const serializers = new Serializers();
 serializers.registerSerializers(array);

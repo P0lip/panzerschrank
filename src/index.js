@@ -89,8 +89,17 @@ export default function (obj, serializers) {
   Object.defineProperties(proxy, {
     [internal]: {
       value: {
-        map,
-        mutable,
+        store: map,
+        get(...args) {
+          return map.get(...args);
+        },
+        has(...args) {
+          return map.has(...args);
+        },
+        set(...args) {
+          return map.set(...args);
+        },
+        mutable: false,
       },
     },
     [Symbol.iterator]: {

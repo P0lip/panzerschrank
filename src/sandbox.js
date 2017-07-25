@@ -13,16 +13,12 @@ const traps = {
   },
 };
 
-function materializeArguments(args) {
-  return args.map(arg => {
-    if (typeof arg === 'function') {
-      return sandbox(arg);
-    }
+function materializeArgument(arg) {
+  if (typeof arg === 'function') {
+    return () => {};
+  }
 
-    if (isNonPrimitive(arg) === true) return arg;
-
-    return JSON.parse(JSON.stringify(arg));
-  });
+  return JSON.parse(JSON.stringify(arg));
 }
 
 export default function sandbox(func, args = []) {
@@ -30,5 +26,5 @@ export default function sandbox(func, args = []) {
     's',
     `with(s){return(${func.toString()}).apply(this,arguments)}`,
   );
-  return sandboxedFunc(new Proxy([this, ...materializeArguments(args)], traps));
+  return sandboxedFunc(new Proxy([this, ...args.map(materializeArgument)], traps));
 }

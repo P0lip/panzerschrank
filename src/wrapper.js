@@ -1,23 +1,44 @@
-import proxy from './proxy';
+const context = Symbol('c');
 
-export default class Wrapper {
-  constructor(initial, adapter, serializers) {
-    this.ref = proxy(initial, serializers); // pass sth like mutable and use it, then remove set value(){}
-    this.adapter = adapter;
-    this.serializers = serializers;
-  }
+function proxy(obj, serializer) {
+  return new Proxy(obj, {
+    get(target, key) {
+      if (typeof target[key] === 'function') {
+        return (...args) => {
+          const newObj = serializer(target);
+          Reflect.apply(target[key], newObj, args);
+          return proxy(newObj, serializer);
+        };
+      }
 
+      return target[key];
+    },
+
+    set() {
+      return false;
+    },
+  });
+}
+
+const nullObj = {
   get value() {
-    // TODO:
-    // don't copy/clone objects over and over again...
-    // We could observe changes for some simpler (non-exotic) objects...
-    // Ultimately, we would clone/copy an object only when its shape changes
-    // For arrays we could monkey-patch a 'length' prop and take care of method that change order of items.
-    return this.ref;
-  }
+    return null;
+  },
 
   set value(newValue) {
-    this.ref = this.adapter(newValue, this.serializers);
-    return this.ref;
+    return false;
   }
-}
+};
+
+export default (initial, serializer) => typeof serializer !== 'function' ? nullObj : ({
+  [context]: proxy(initial, serializer),
+  get value() {
+    return this[context];
+  },
+
+  set value(newValue) {
+    this[context] = newValue;
+    return newValue;
+  },
+});
+
