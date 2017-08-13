@@ -1,8 +1,8 @@
 import diff from 'src/diff';
-import clone from 'src/clone';
+import clone, { internal } from 'src/clone';
 
-export function compare(items) {
+export function compare(items, serializers) {
   expect(
-    items.every(item => diff(clone(item), item))
-  ).toBe(true);
+    items.filter(item => !diff(Object.assign({}, clone(item, serializers)), item))
+  ).toEqual([]);
 }

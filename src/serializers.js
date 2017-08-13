@@ -1,21 +1,27 @@
 import { hasMonkeyPatchedProp } from './utils';
 import env from './env';
 
+export function generic(sth) {
+  try {
+    return JSON.parse(JSON.stringify(sth));
+  } catch(ex) {
+    return null;
+  }
+}
+
 export default class {
   constructor() {
-    this.serializers = new Map();
-    this.helpers = new Map();
-    this.missed = new WeakSet();
+    this.serializers = new WeakMap();
   }
 
-  registerSerializer({ constructor, serializer, instance }) {
-    if (this.serializers.has(constructor) === true) {
-      console.warn('Overwriting already existing constructor');
-    }
+  registerSerializer({ test, serializer }) {
+    test.forEach(constructor => {
+      if (env.mode === 'strict' && this.serializers.has(constructor) === true) {
+        console.warn('Overwriting already existing constructor');
+      }
 
-    this.serializers.set(constructor, serializer);
-    if (instance !== void 0) this.helpers.set(constructor, instance);
-    if (this.missed.has(constructor) === true) this.missed.delete(constructor);
+      this.serializers.set(constructor, serializer);
+    });
   }
 
   registerSerializers(serializers) {
@@ -27,25 +33,12 @@ export default class {
   }
 
   getSerializer(target) {
-    if (this.missed.has(target.constructor)) return;
-    if (env.isStrict === true && hasMonkeyPatchedProp(target) === true) {
+    if (env.mode === 'strict' && hasMonkeyPatchedProp(target) === true) {
       throw new TypeError('Target has a monkey patched property');
     }
 
-    const serializer = this.serializers.get(target.constructor);
-
-    if (serializer === void 0) {
-      for (const [constructor, instance] of this.helpers.entries()) {
-        if (instance(target) === true) {
-          const foundSerializer = this.serializers.get(constructor);
-          this.serializers.set(target.constructor, foundSerializer);
-          return foundSerializer;
-        }
-      }
-
-      this.missed.add(target.constructor);
-    } else {
-      return serializer;
-    }
+    return this.serializers.get(target.constructor) ||
+      this.serializers.get(Object.getPrototypeOf(target.constructor)) ||
+      generic;
   }
 }

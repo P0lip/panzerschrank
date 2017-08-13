@@ -1,6 +1,6 @@
 export default [
   {
-    constructor: Date,
+    test: [Date],
     serializer: date => new Date(date),
   },
 ];

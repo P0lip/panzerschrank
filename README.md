@@ -38,8 +38,8 @@ yarn add panzerschrank
 ```js
 import vault from 'panzerschrank/sloppy';
 const safeObj = vault({ foo: 'bar', numbers: [0, 1, 2] });
-```
 
+```
 or
 ```js
 import vault from 'panzerschrank/strict';
@@ -48,8 +48,61 @@ const safeObj = vault({ foo: 'bar', numbers: [0, 1, 2] });
 
 ## Documentation:
 
-Coming soon...
+Vault uses proxy under the hood, therefore it intercepts property access.
+Basically it works like a normal object with quite a few gotchas, though.
+The key differences are:
+1. In case of non-primitive, you receive a new instance of given object on each get.
+2. Adding/modifying property is changed.
+3. Vault is iterable.
+4. You are not able to list keys - this is intentional, but may be changed in future.
 
+```js
+const safeObj = vault({ foo: 'bar', numbers: [0, 1, 2] });
+safeObj.numbers; // [0, 1, 2], but...
+safeObj.numbers !== safeObj.numbers; // === true
+safeObj.numbers.pop(); // === 2
+safeObj.numbers.pop(); // === 2
+safeObj.numbers.length; // === 3
+```
+
+Adding a new property or modifying an existing one is easy...
+```js
+const safeObj = vault({ foo: 'bar', numbers: [0, 1, 2] });
+safeObj(obj => {
+  obj.numbers = 'hey, i am string now!';
+});
+safeObj.numbers; // === 'hey, i am string now!'
+```
+
+To avoid the leak of object, the passed function is sandboxed, meaning you can't accept anything but its own scope.
+```js
+const safeObj = vault({ foo: 'bar', numbers: [0, 1, 2] });
+const str = '2234';
+safeObj(obj => {
+  obj.numbers = str; // throws ReferenceError;
+});
+```
+however, safeObj accepts extra arguments :)
+```js
+const safeObj = vault({ foo: 'bar', numbers: [0, 1, 2] });
+safeObj((obj, str) => {
+  obj.numbers = str;
+}, '2234');
+safeObj.numbers; // === '2234'
+```
+
+This is the only way to do it. Setting property in a normal way simply won't work.
+```js
+const safeObj = vault({ foo: 'bar', numbers: [0, 1, 2] });
+safeObj.numbers = 2; // throws exception or does nothing
+```
+
+```js
+const safeObj = vault({ foo: 'bar', numbers: [0, 1, 2] });
+for (const [key, value] of safeObj) {
+  console.log(key, value); // prints foo, bar and then numbers and [0, 1, 2];
+}
+```
 
 ## License
 

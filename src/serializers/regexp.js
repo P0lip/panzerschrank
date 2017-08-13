@@ -1,6 +1,6 @@
 export default [
   {
-    constructor: RegExp,
+    test: [RegExp],
     serializer: regexp => new RegExp(regexp),
   },
 ];

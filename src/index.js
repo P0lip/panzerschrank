@@ -1,44 +1,42 @@
 import clone, { internal } from './clone';
 import Serializers from './serializers';
-import sandbox from './sandbox';
+import sandbox, { proxies } from './sandbox';
 import env from './env';
+import AccessError from './error';
 
 const traps = {
-  get(target, prop) {
-    if (prop === internal) throw new Error();
-    if (prop === Symbol.iterator) {
-      return prop[Symbol.iterator];
+  get(target, key) {
+    if (key === internal) throw new AccessError('Internal');
+    if (key === Symbol.iterator) {
+      return target[Symbol.iterator];
     }
 
-    return target[internal].get(prop);
+    return Reflect.get(target[internal].store, key);
   },
 
-  has(target, prop) {
-    return target[internal].has(prop);
+  has(target, key) {
+    return Reflect.has(target[internal].store, key);
   },
 
-  deleteProperty(target, prop) {
+  deleteProperty(target, key) {
     if (target[internal].mutable === true) {
-      target[internal].delete(prop);
-      return true;
+      return Reflect.deleteProperty(target[internal].store, key);
     }
 
-    if (env.isStrict === true) {
-      throw new TypeError(`Can't delete property ${prop}`);
+    if (env.mode === 'strict') {
+      throw new TypeError(`Can't delete property ${key}`);
     }
 
     return false;
   },
 
-  set(target, prop, value) {
-    if (mutable.has(target) === true) {
-      // todo: if target.has(prop)? - forbid adding new props?
-      target[internal].set(prop, value);
-      return true;
+  set(target, key, value) {
+    if (target[internal].mutable === true) {
+      return Reflect.set(target[internal].store, key, value);
     }
 
-    if (env.isStrict === true) {
-      throw new TypeError(`Can't add/mutate property ${prop}, object is not extensible/mutable`);
+    if (env.mode === 'strict') {
+      throw new TypeError(`Can't add/mutate property ${key}, object is not extensible/mutable`);
     }
 
     return false;
@@ -49,64 +47,72 @@ const traps = {
     // like it was setter? dunno, as what if descriptor is non-enumerable, non-writable etc?
   },
 
-  apply(target, thisArg, argumentsList) {
-    try {
-      target[internal].mutable = true;
-      sandbox(argumentsList[0], [target, argumentsList.slice(1)]); // todo shall we pass serializers here?
-    } catch (ex) {}
-    target[internal].mutable = false;
-  },
-
-  ownKeys() {
-    return [];
+  ownKeys(target) {
+    return ['prototype'];
   },
 
   getOwnPropertyDescriptor(target, prop) {
     if (prop === Symbol.iterator) {
       return {
         writable: false,
-        configurable: false,
-        enumerable: false,
+        configurable: true,
+        enumerable: true,
         value: target[Symbol.iterator],
       };
     }
 
-    if (env.isJest === true && prop === 'internal') {
+    if (env.isJest === true && prop === internal) {
       return {
         writable: false,
-        configurable: false,
+        configurable: true,
         enumerable: false,
         value: internal,
       };
     }
+
+    return {
+      writable: false,
+      configurable: false,
+      enumerable: false,
+      value: void 0,
+    };
   }
 };
 
 export default function (obj, serializers) {
-  const map = new Map(Object.entries(clone(obj, serializers)));
+  let proxy;
+  function handler(func, ...args) {
+    try {
+      proxies.trust(proxy);
+      handler[internal].mutable = true;
+      sandbox.call(null, func, [proxy, ...args]);
+    } catch (ex) {}
+    handler[internal].mutable = false;
+    proxies.distrust(proxy);
+  }
 
-  const proxy = () => {};
-  Object.defineProperties(proxy, {
+  Object.setPrototypeOf(handler, null);
+
+  Object.defineProperties(handler, {
     [internal]: {
+      configurable: true,
       value: {
-        store: map,
-        get(...args) {
-          return map.get(...args);
-        },
-        has(...args) {
-          return map.has(...args);
-        },
-        set(...args) {
-          return map.set(...args);
-        },
+        store: clone(obj, serializers),
         mutable: false,
+        serializers,
       },
     },
     [Symbol.iterator]: {
-      value: map[Symbol.iterator].bind(map),
+      configurable: true,
+      enumerable: true,
+      value() {
+        return [];
+      },
     },
   });
-  return new Proxy(proxy, traps);
+
+  proxy = new Proxy(handler, traps);
+  return proxy;
 }
 
 export { Serializers };

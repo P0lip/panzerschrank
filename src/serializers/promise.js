@@ -1,6 +1,6 @@
 export default [
   {
-    constructor: Promise,
+    test: [Promise],
     serializer: promise => promise.then(),
   },
 ];

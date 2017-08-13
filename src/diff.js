@@ -11,24 +11,19 @@ export default function areEqual(lhs, rhs) {
   if (type !== getType(rhs)) return false;
 
   switch (type) {
-    case 'boolean':
-    case 'number':
-    case 'string':
-    case 'symbol':
-    case 'native-function':
-      return lhs === rhs;
-    case 'function':
+    case 'Function':
+      return Reflect.apply(Function.toString, lhs, []) === Reflect.apply(Function.toString, rhs, []);
+    case 'Object':
       return lhs.toString() === rhs.toString();
-    case 'object':
-    case 'object-literal': {
+    case 'ObjectLiteral': {
       const lhsKeys = Object.getOwnPropertyNames(lhs);
       return lhsKeys.length === Object.getOwnPropertyNames(rhs).length && lhsKeys
         .every(key => areEqual(lhs[key], rhs[key]));
     }
-    case 'array':
-    case 'typed-array':
+    case 'Array':
+    case 'TypedArray':
       return lhs.length === rhs.length && lhs.every((item, i) => rhs[i] === item);
     default:
-      return false;
+      return lhs === rhs;
   }
 }

@@ -4,3 +4,7 @@ node_modules
 coverage/
 .cache/
 .eslintcache
+strict.js
+strict.js.map
+sloppy.js
+sloppy.js.map

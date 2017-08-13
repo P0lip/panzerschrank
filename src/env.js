@@ -1,6 +1,6 @@
 export default {
   get isV8() {
-    if (this.isStrict === true) return false;
+    if (this.mode === 'sloppy') return false;
     try {
       eval('%GetV8Version()');
       return true;
@@ -8,10 +8,7 @@ export default {
       return false;
     }
   },
+  mode: /development|test/.test(process.env.NODE_ENV) ? 'strict' : 'sloppy',
   isJest: process.env.NODE_ENV === 'test',
-  isStrict: /development|test/.test(process.env.NODE_ENV),
-  get isSloppy() {
-    return !this.isStrict;
-  },
   NODE_ENV: process.env.NODE_ENV,
 };

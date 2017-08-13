@@ -1,9 +1,10 @@
 import filesize from 'rollup-plugin-filesize';
 import replace from 'rollup-plugin-replace';
 import butternut from 'rollup-plugin-butternut';
+import env from './src/env';
 
 export default {
-  dest: `./panzerschrank.js`,
+  dest: `./${env.mode}.js`,
   entry: './src/index.js',
   moduleName: 'panzerschrank',
   format: 'es',

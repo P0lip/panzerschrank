@@ -1,26 +1,19 @@
 import Serializers from '../src/serializers';
-import array from '../src/serializers/array';
+import array from 'src/serializers/array';
+import date from 'src/serializers/date';
 
 describe('Serializers', () => {
   test('registers serializer', () => {
     const serializers = new Serializers();
-    serializers.registerSerializer({
-      constructor: Array,
-      serializer(arr) {
-        return arr;
-      }
-    });
-    expect(serializers.getSerializer([1])).not.toThrow();
+    serializers.registerSerializer(array[0]);
+    expect(() => serializers.getSerializer([1])([1])).not.toThrow();
   });
 
   test('registers serializers', () => {
     const serializers = new Serializers();
-    serializers.registerSerializers([
-      { constructor: Array, serializer() {} },
-      { constructor: Date, serializer() {} },
-    ]);
-    expect(serializers.getSerializer([1])).not.toThrow();
-    expect(serializers.getSerializer(new Date())).not.toThrow();
+    serializers.registerSerializers([...array, ...date]);
+    expect(() => serializers.getSerializer([1])([1])).not.toThrow();
+    expect(() => serializers.getSerializer(new Date())(new Date())).not.toThrow();
   });
 
   test('gets serializer', () => {
@@ -40,23 +33,11 @@ describe('Serializers', () => {
 
   test('deletes serializer', () => {
     const serializers = new Serializers();
-    serializers.registerSerializer({
-      constructor: Array,
-      serializer(arr) {
-        return arr;
-      }
-    });
-    expect(serializers.getSerializer([1])).not.toThrow();
-    serializers.removeSerializer(Array);
+    serializers.registerSerializers([...array, ...date]);
+    expect(() => serializers.getSerializer([1])([1])).not.toThrow();
+    expect(() => serializers.getSerializer(new Date())(new Date())).not.toThrow();
+    serializers.removeSerializer([]);
     expect(() => serializers.getSerializer([1])()).toThrow();
-  });
-
-  test('handles misses', () => {
-    const serializers = new Serializers();
-    serializers.getSerializer([1]);
-    expect(serializers.getSerializer([1])).toBe(undefined);
-    expect(serializers.missed.has(Array)).toBe(true);
-    serializers.registerSerializers(array);
-    expect(serializers.missed.has(Array)).toBe(false);
+    expect(() => serializers.getSerializer(new Uint8Array(0))(new Uint8Array(0))).not.toThrow();
   });
 });

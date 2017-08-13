@@ -3,6 +3,7 @@ import {
   isObject,
   isObjectLiteral,
   isNative,
+  isPrimitive,
   hasMonkeyPatchedProp,
   assert,
   getType,
@@ -48,6 +49,22 @@ describe('#isObjectLiteral', () => {
   });
 });
 
+describe('#isPrimitive', () => {
+  test('returns false if non-primitive passed', () => {
+    expect(isPrimitive([])).toBe(false);
+    expect(isPrimitive({})).toBe(false);
+  });
+
+  test('returns true if primitive passed', () => {
+     expect(isPrimitive(2)).toBe(true);
+     expect(isPrimitive(false)).toBe(true);
+     expect(isPrimitive('hehe')).toBe(true);
+     expect(isPrimitive(Symbol('uuu'))).toBe(true);
+     expect(isPrimitive()).toBe(true);
+     expect(isPrimitive(null)).toBe(true);
+   });
+});
+
 describe('#toArray', () => {
   test('returns an array if iterable is passed', () => {
     expect(toArray([])).toEqual([]);
@@ -90,8 +107,7 @@ describe('#assert', () => {
   });
 });
 
-
-test('hasMonkeyPatchedProp() works', () => {
+test('#hasMonkeyPatchedProp works', () => {
   let arr = [];
   arr.test = 2;
   expect(hasMonkeyPatchedProp(arr)).toBe(false);
@@ -100,15 +116,16 @@ test('hasMonkeyPatchedProp() works', () => {
   expect(hasMonkeyPatchedProp(arr)).toBe(true);
   expect(hasMonkeyPatchedProp([])).toBe(false);
   expect(hasMonkeyPatchedProp([0])).toBe(false);
-  // todo: add sth with delete
   arr = [];
   arr.push = arr.splice;
   expect(hasMonkeyPatchedProp(arr)).toBe(true);
   arr.push = [].push;
   expect(hasMonkeyPatchedProp(arr)).toBe(false);
+  delete arr.push;
+  expect(hasMonkeyPatchedProp(arr)).toBe(false);
 });
 
-test('getType()', () => {
-  expect(getType(true)).toBe('boolean');
-  expect(getType(false)).toBe('boolean');
+describe('#getType', () => {
+
 });
+

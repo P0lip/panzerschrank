@@ -61,44 +61,33 @@ describe('Sandbox', () => {
       return d;
     }, [5])).toEqual(5);
 
-    {
-      const x = 2;
-      expect(sandbox((d = x) => d)).toBe(undefined);
-    }
+    const x = 2;
+    expect(sandbox((d = x) => d)).toBe(undefined);
 
     expect(sandbox(function (d) {
       arguments[0] = 2;
       return arguments[0];
     }, [5])).toEqual(2);
+  });
 
-    {
-      const arr = [2];
-      sandbox(d => {
-        d.push(4);
-      }, [arr]);
-      expect(arr).toEqual([2]);
-    }
+  test('dereferences custom arguments', () => {
+    const arr = [2];
+    sandbox(d => {
+      d.push(4);
+    }, [arr]);
+    expect(arr).toEqual([2]);
 
-    {
-      const foo = {};
-      const bar = { x: true };
-      sandbox((obj, obj2) => {
-        obj.a = obj2;
-      }, [foo, bar]);
-      expect(foo.a).toBeUndefined();
+    const foo = {};
+    const bar = { x: true };
+    sandbox((obj, obj2) => {
+      obj.a = obj2;
+    }, [foo, bar]);
+    expect(foo.a).toBeUndefined();
+    bar.x = false;
+    expect(foo.a).not.toEqual(bar);
 
-      bar.x = false;
-      expect(foo.a).not.toEqual(bar);
-    }
-
-    {
-      let y = 4;
-      sandbox((d, c) => {
-        c(d);
-      }, [10, function (x) {
-        y = x;
-      }]);
-      expect(y).toBe(4);
-    }
+    let y = 4;
+    sandbox((d, c) => c(d), [10, (x) => { y = x }]);
+    expect(y).toBe(undefined);
   });
 });

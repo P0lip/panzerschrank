@@ -83,7 +83,7 @@ export function hasMonkeyPatchedProp(target) {
 }
 
 export function toArray(iterable) {
-  if (env.isStrict === true && isNative(iterable[Symbol.iterator]) === false) {
+  if (env.mode === 'strict' && isNative(iterable[Symbol.iterator]) === false) {
     throw new TypeError(`${iterable.name} has a monkey-patched iterator!`);
   }
 
@@ -94,29 +94,41 @@ export function isObject(obj) {
   return obj !== void 0 && obj !== null && typeof obj === 'object';
 }
 
-export function isNonPrimitive(target) {
+export function isPrimitive(target) {
   return typeof target !== 'function' && isObject(target) === false;
 }
 
+const { toString } = {};
+if (env.mode === 'strict') {
+  assert(isNative(toString));
+}
+
 export function isObjectLiteral(obj) {
-  if (isNonPrimitive(obj) === true) return false;
+  if (isPrimitive(obj) === true) return false;
   if (obj[Symbol.toStringTag] !== void 0) {
     const proto = Object.getPrototypeOf(obj);
     return proto === null || proto === Object.prototype;
   }
 
-  return {}.toString.call(obj) === '[object Object]';
+  return Reflect.apply(toString, obj, []) === '[object Object]';
 }
 
-
-export function getType(sth) { // TODO: is any runtime method exposed method for this?
+export function getType(sth) { // TODO: is any runtime method exposed for this?
+  if (sth === null) return 'Null';
   const type = typeof sth;
-  if (sth === null) return 'null';
-  if (type === 'function') {
-    return isNative(sth) === true ? 'native-function' : type;
+  switch (type) {
+    case 'function':
+      if (env.mode === 'strict' && isNative(sth) === true) return 'NativeFunction';
+      return 'Function';
+    case 'object':
+      if (Array.isArray(sth) === true) {
+        return Object.getPrototypeOf(sth.constructor).name || 'Array';
+      }
+
+      if (isObjectLiteral(sth) === true) return 'ObjectLiteral';
+      return 'Object';
+      break;
+    default:
+      return type[0].toUpperCase() + type.slice(1);
   }
-  if (type !== 'object') return type;
-  if (Array.isArray(sth) === true) return 'array';
-  if (isObjectLiteral(sth) === true) return 'object-literal';
-  return 'object';
 }

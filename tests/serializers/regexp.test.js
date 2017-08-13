@@ -9,6 +9,10 @@ class CustomRegExp extends RegExp {
   [Symbol.replace]() {
     return '';
   }
+
+  static get implements() {
+
+  }
 }
 
 describe('RegExp serializer', () => {
@@ -17,8 +21,8 @@ describe('RegExp serializer', () => {
       { c: true, reg: /22/ },
       { reg: /323232/ },
       { reg: new RegExp() },
-      { reg: new CustomRegExp() },
-    ]);
+      // { reg: new CustomRegExp() },
+    ], serializers);
   });
 });
 

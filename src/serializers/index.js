@@ -1,17 +1,21 @@
 import array from './array';
-import object from './object';
 import date from './date';
 import regexp from './regexp';
 import dom from './dom';
 import promise from './promise';
 import collections from './collections';
 
-export default [
+const serializers = [
   ...array,
-  ...object,
   ...date,
   ...regexp,
-  ...dom,
   ...promise,
   ...collections,
 ];
+
+if (process.env.TARGET === 'browser') {
+  serializers.push(...dom);
+}
+
+
+export default serializers;

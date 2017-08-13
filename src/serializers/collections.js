@@ -3,7 +3,7 @@ function patch(ref, method, func) {
   Object.defineProperty(ref, method, Object.assign({}, descriptor, {
     value(...args) {
       func(...args);
-      Reflect.apply(descriptor.value, args);
+      Reflect.apply(descriptor.value, ref, args);
     },
   }));
 }
@@ -104,19 +104,15 @@ class ShadowedWeakSet extends WeakSet {
 
 export default [
   {
-    constructor: Set,
-    serializer: set => new Set(set),
+    test: [Set, Map],
+    serializer: collection => new collection.constructor(collection),
   },
   {
-    constructor: Map,
-    serializer: map => new Map(map),
-  },
-  {
-    constructor: WeakMap,
+    test: [WeakMap],
     serializer: weakMap => new ShadowedWeakMap(weakMap),
   },
   {
-    constructor: WeakSet,
+    test: [WeakSet],
     serializer: weakSet => new ShadowedWeakSet(weakSet),
   },
 ];
