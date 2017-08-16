@@ -21,20 +21,14 @@ describe('Sandbox', () => {
   });
 
   test('has a separated scope', () => {
-    try { // .toThrow doesn't work as expected
-      sandbox(() => {
-        console.log();
-      });
-    } catch (ex) {
-      expect(ex).toBeInstanceOf(TypeError);
-    }
+    expect(() => sandbox(() => {
+      console.log();
+    })).toThrow(ReferenceError)
 
-    try { // .toThrow doesn't work as expected
-      const d = 5;
-      sandbox(() => d);
-    } catch (ex) {
-      expect(ex).toBeInstanceOf(TypeError);
-    }
+    const d = 5;
+    expect(() => sandbox(() => {
+      d;
+    })).toThrow(ReferenceError);
   });
 
   test('accepts custom arguments', () => {
@@ -62,7 +56,7 @@ describe('Sandbox', () => {
     }, [5])).toEqual(5);
 
     const x = 2;
-    expect(sandbox((d = x) => d)).toBe(undefined);
+    expect(() => sandbox((d = x) => d)).toThrow(ReferenceError);
 
     expect(sandbox(function (d) {
       arguments[0] = 2;
@@ -89,5 +83,11 @@ describe('Sandbox', () => {
     let y = 4;
     sandbox((d, c) => c(d), [10, (x) => { y = x }]);
     expect(y).toBe(undefined);
+  });
+
+  test('nested sandboxing', () => {
+    expect(() => sandbox(() => {
+      (() => x)();
+    }, [])).toThrow();
   });
 });

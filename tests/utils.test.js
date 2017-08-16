@@ -65,26 +65,6 @@ describe('#isPrimitive', () => {
    });
 });
 
-describe('#toArray', () => {
-  test('returns an array if iterable is passed', () => {
-    expect(toArray([])).toEqual([]);
-    expect(toArray(new Map([['test', true]]).keys())).toEqual(['test']);
-  });
-
-  test('throws when monkey-patched iterable is passed', () => {
-    const arr = [];
-    arr[Symbol.iterator] = function* () {
-      yield;
-    };
-
-    try {
-      toArray(arr);
-    } catch (ex) {
-      expect(ex).toBeInstanceOf(TypeError);
-    }
-  });
-});
-
 describe('#isNative', () => {
   test('returns true if function is native', () => {
     expect(isNative(Array.prototype.forEach)).toBe(true);
@@ -107,25 +87,22 @@ describe('#assert', () => {
   });
 });
 
-test('#hasMonkeyPatchedProp works', () => {
-  let arr = [];
-  arr.test = 2;
-  expect(hasMonkeyPatchedProp(arr)).toBe(false);
-  arr = [];
-  arr.push = () => {};
-  expect(hasMonkeyPatchedProp(arr)).toBe(true);
-  expect(hasMonkeyPatchedProp([])).toBe(false);
-  expect(hasMonkeyPatchedProp([0])).toBe(false);
-  arr = [];
-  arr.push = arr.splice;
-  expect(hasMonkeyPatchedProp(arr)).toBe(true);
-  arr.push = [].push;
-  expect(hasMonkeyPatchedProp(arr)).toBe(false);
-  delete arr.push;
-  expect(hasMonkeyPatchedProp(arr)).toBe(false);
+describe('#hasMonkeyPatchedProp', () => {
+  test('returns true when none of passed prop is monkey-patched', () => {
+    const arr = [];
+    arr[Symbol.iterator] = () => {};
+    expect(hasMonkeyPatchedProp(arr, [Symbol.iterator])).toBe(true);
+  });
+
+  test('returns false when none of passed prop is monkey-patched', () => {
+    expect(hasMonkeyPatchedProp([], [Symbol.iterator])).toBe(false);
+  })
 });
 
 describe('#getType', () => {
-
+  describe('NativeFunction', () => {
+    expect(getType(Function.constructor)).toBe('NativeFunction');
+    expect(getType(() => {})).not.toBe('NativeFunction');
+  });
 });
 

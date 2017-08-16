@@ -6,12 +6,8 @@ const serializers = new Serializers();
 serializers.registerSerializers(regexp);
 
 class CustomRegExp extends RegExp {
-  [Symbol.replace]() {
-    return '';
-  }
-
-  static get implements() {
-
+  static get [Symbol.species]() {
+    return RegExp;
   }
 }
 
@@ -21,7 +17,7 @@ describe('RegExp serializer', () => {
       { c: true, reg: /22/ },
       { reg: /323232/ },
       { reg: new RegExp() },
-      // { reg: new CustomRegExp() },
+      { custom: new CustomRegExp() },
     ], serializers);
   });
 });

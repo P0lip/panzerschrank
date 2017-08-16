@@ -33,11 +33,11 @@ export default class {
   }
 
   getSerializer(target) {
-    if (env.mode === 'strict' && hasMonkeyPatchedProp(target) === true) {
+    if (env.mode === 'strict' && hasMonkeyPatchedProp(target, [Symbol.iterator]) === true) {
       throw new TypeError('Target has a monkey patched property');
     }
 
-    return this.serializers.get(target.constructor) ||
+    return this.serializers.get(target[Symbol.species] || target.constructor) ||
       this.serializers.get(Object.getPrototypeOf(target.constructor)) ||
       generic;
   }

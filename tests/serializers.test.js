@@ -27,7 +27,7 @@ describe('Serializers', () => {
     const serializers = new Serializers();
     serializers.registerSerializers(array);
     const arr = [];
-    arr.push = () => {};
+    arr[Symbol.iterator] = () => {};
     expect(() => serializers.getSerializer(arr)).toThrow();
   });
 

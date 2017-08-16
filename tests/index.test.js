@@ -6,14 +6,30 @@ describe('Vault', () => {
     expect(instance.foo).toBe('bar');
     expect(instance.bar).toBe(false);
     expect(instance.arr).toEqual([0, 1]);
-    //for (const [key, value] of instance) {
-    //  expect(key).toBeDefined();
-    //  expect(value).toBeDefined();
-    //}
-
     expect(instance.arr === instance.arr).toBe(false);
     expect(instance.arr.pop() === instance.arr.pop()).toBe(true);
     expect(instance.arr).toEqual([0, 1]);
+  });
+
+  test('Symbol.iterator', () => {
+    let called = 0;
+    const keys = ['foo', 'bar', 'test']
+    const values = ['bar', false, new Date(0)];
+    for (const [key, value] of vault({ foo: 'bar', bar: false, test: new Date(0) })) {
+      expect(key).toBeDefined();
+      expect(key).toBe(keys[called]);
+      expect(value).toBeDefined();
+      expect(value).toEqual(values[called]);
+      called++;
+    }
+    expect(called).toBe(3);
+    // todo: check how immutability works here
+  });
+
+  test('Symbol.toStringTag', () => {
+    expect(
+      {}.toString.call(vault({ foo: 'bar', bar: false, test: new Date() }))
+    ).toBe('[object Vault]');
   });
 
   test('set trap', () => {
@@ -30,23 +46,40 @@ describe('Vault', () => {
         obj.newProp = str;
       });
     }).toThrow();
-    expect(instance.foo).toBe('bar');
+    expect(instance.newProp).toBe(undefined);
 
     expect(() => {
       instance((obj, str) => {
         obj.newProp = str;
       }, str);
-    }).not.toThrow()
+    }).not.toThrow();
 
     instance(obj => {
       obj.foo = 2;
     });
-
     expect(instance.foo).toBe(2);
+    instance(obj => {
+      obj.foo = [];
+    });
+    expect(instance.foo).toBe([]);
+
     instance(obj => {
       obj.newProp = {};
     });
     expect(instance.newProp).toEqual({});
+    instance(obj => {
+      obj.newProp = [];
+    });
+    expect(instance.newProp).toEqual({});
+  });
+
+  test('nested set trap', () => {
+    const instance = vault({ foo: { bar: false } });
+    expect(instance.foo.bar).toBe(false);
+    instance(obj => {
+      obj.foo.bar = true;
+    });
+    expect(instance.foo.bar).toBe(true);
   });
 
   test('delete trap', () => {
@@ -62,13 +95,27 @@ describe('Vault', () => {
     });
 
     expect(instance.test).toBeUndefined();
-  })
+  });
+
+  test('defineProperty trap', () => {
+    const instance = vault({ test: 2 });
+    Object.defineProperty(instance, 'test', {
+      value: 5,
+    });
+    expect(instance.test).toBe(5);
+    Object.defineProperty(instance, 'test2', {
+      value: [],
+      writable: false,
+    });
+    expect(instance.test2).toEqual([]);
+  });
+
 
   test('ownKeys trap', () => {
     const obj = vault({ foo: 'bar', bar: false, lelz: 'true' });
     expect(Object.getOwnPropertyNames(obj)).toEqual(['prototype']);
     expect(Object.keys(obj)).toEqual([]);
-    expect(Object.getOwnPropertySymbols(obj)).toEqual([]);
-    expect(Reflect.ownKeys(obj)).toEqual(['prototype']);
+    expect(Object.getOwnPropertySymbols(obj)).toEqual([Symbol.iterator]);
+    expect(Reflect.ownKeys(obj)).toEqual(['prototype', Symbol.iterator]);
   })
 });

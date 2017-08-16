@@ -24,6 +24,10 @@ const traps = {
     if (key === 'arguments') {
       return target.slice(1);
     }
+
+    if (typeof key !== 'symbol') {
+      throw new ReferenceError(`${key} is undefined`);
+    }
   },
 };
 
