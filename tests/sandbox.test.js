@@ -1,7 +1,7 @@
 import sandbox from 'src/sandbox';
 
 describe('Sandbox', () => {
-  test('executes func', () => {
+  test('executes function', () => {
     expect(sandbox(function () {
       return 5;
     })).toBe(5);
@@ -12,6 +12,14 @@ describe('Sandbox', () => {
       return 5;
     })).toBe(5);
   });
+
+  test('executes async function', async () => {
+    const result = await sandbox(async () => {
+      await Promise.resolve(10);
+      return 5;
+    }, []);
+    expect(result).toBe(5);
+  })
 
   test('recurrence is possible', () => {
     expect(sandbox(function test(i = 0) {
@@ -70,6 +78,10 @@ describe('Sandbox', () => {
       d.push(4);
     }, [arr]);
     expect(arr).toEqual([2]);
+    sandbox(d => {
+      d.pop();
+    }, [arr]);
+    expect(arr).toEqual([2]);
 
     const foo = {};
     const bar = { x: true };
@@ -82,7 +94,7 @@ describe('Sandbox', () => {
 
     let y = 4;
     sandbox((d, c) => c(d), [10, (x) => { y = x }]);
-    expect(y).toBe(undefined);
+    expect(y).toBe(4);
   });
 
   test('nested sandboxing', () => {

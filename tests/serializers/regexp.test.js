@@ -2,8 +2,7 @@ import Serializers from 'src/serializers';
 import regexp from 'src/serializers/regexp';
 import { compare } from 'jest/helpers';
 
-const serializers = new Serializers();
-serializers.registerSerializers(regexp);
+const serializers = new Serializers(regexp);
 
 class CustomRegExp extends RegExp {
   static get [Symbol.species]() {

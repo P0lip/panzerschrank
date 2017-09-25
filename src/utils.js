@@ -1,13 +1,10 @@
-import env from './env';
-import diff from './diff';
-
 export function assert(assertion) {
-  if (assertion === false) throw new Error('Assertion failed');
+  if (assertion === false) throw new Error();
 }
 
 export function toString(obj) {
-  if (env.mode === 'strict') {
-    assert(isNative(obj.toString));
+  if (process.env.NODE_ENV !== 'production') {
+    assert(isNativeFunction(obj.toString));
   }
   try {
     return obj.toString();
@@ -17,8 +14,8 @@ export function toString(obj) {
 }
 
 export function toStringTag(obj) {
-  if (env.mode === 'strict') {
-    assert(isNative(Object.prototype.toString));
+  if (process.env.NODE_ENV !== 'production') {
+    assert(isNativeFunction(Object.prototype.toString));
   }
 
   const tag = obj[Symbol.toStringTag];
@@ -34,7 +31,7 @@ export function getSourceCode(func) {
   return Reflect.apply(Function.toString, func, []);
 }
 
-export function isNative(func) {
+export function isNativeFunction(func) {
   /* istanbul ignore if */
   const sourceCode = getSourceCode(func);
   if (sourceCode === getSourceCode(func.bind(null))) {
@@ -42,21 +39,33 @@ export function isNative(func) {
   }
 
   try {
-    Function(`return (${sourceCode})`); // eslint-disable-line no-new-func
+    Function(`return(${sourceCode})`); // eslint-disable-line no-new-func
     return false;
   } catch (e) {
     return true;
   }
 }
 
+export const AsyncFunction = Object.getPrototypeOf(async () => {}).constructor;
+
+export function isAsyncFunction(func) {
+  return func instanceof AsyncFunction;
+}
+
 export function isNativeDescriptor(obj, prop) {
   const descriptor = Reflect.getOwnPropertyDescriptor(obj, prop);
   return descriptor !== void 0 && Object.values(descriptor)
-    .every(item => typeof item !== 'function' || isNative(item));
+    .every(item => typeof item !== 'function' || isNativeFunction(item));
 }
 
 export function hasMonkeyPatchedProp(target, props) {
-  return props.every(prop => isNativeDescriptor(target, prop));
+  return !props.every(prop => (
+    !Object.prototype.hasOwnProperty.call(target, prop) || isNativeDescriptor(target, prop)
+  ));
+}
+
+export function isVault(obj) {
+  return isObject(obj) && toStringTag(obj) === 'Vault';
 }
 
 export function isObject(obj) {
@@ -64,11 +73,11 @@ export function isObject(obj) {
 }
 
 export function isPrimitive(target) {
-  return typeof target !== 'function' && isObject(target) === false;
+  return typeof target !== 'function' && !isObject(target);
 }
 
 export function isObjectLiteral(obj) {
-  if (isPrimitive(obj) === true) return false;
+  if (!isObject(obj)) return false;
   if (obj[Symbol.toStringTag] !== void 0) {
     const proto = Object.getPrototypeOf(obj);
     return proto === null || proto === Object.prototype;
@@ -77,17 +86,17 @@ export function isObjectLiteral(obj) {
   return toStringTag(obj) === 'Object';
 }
 
-export function getType(sth) { // TODO: use runtime method (provided that there is any exposed)
+export function getType(sth) {
   if (sth === null) return 'null';
   const type = typeof sth;
   switch (type) {
     case 'function':
       if (typeof sth[Symbol.toStringTag] === 'string') return sth[Symbol.toStringTag];
-      if (env.mode === 'strict' && isNative(sth) === true) return 'NativeFunction';
+      if (isNativeFunction(sth)) return 'NativeFunction';
       return 'Function';
     case 'object':
-      if (Array.isArray(sth) === true) return 'Array';
-      if (isObjectLiteral(sth) === true) return 'ObjectLiteral';
+      if (Array.isArray(sth)) return 'Array';
+      if (isObjectLiteral(sth)) return 'ObjectLiteral';
       if (Object.getPrototypeOf(sth.constructor).name === 'TypedArray') return 'TypedArray';
       return toStringTag(sth);
     default:

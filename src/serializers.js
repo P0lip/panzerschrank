@@ -1,7 +1,4 @@
-import { hasMonkeyPatchedProp } from './utils';
-import env from './env';
-
-export function generic(sth) {
+function generic(sth) {
   try {
     return JSON.parse(JSON.stringify(sth));
   } catch(ex) {
@@ -9,36 +6,19 @@ export function generic(sth) {
   }
 }
 
-export default class {
-  constructor() {
-    this.serializers = new WeakMap();
-  }
-
-  registerSerializer({ test, serializer }) {
-    test.forEach(constructor => {
-      if (env.mode === 'strict' && this.serializers.has(constructor) === true) {
-        console.warn('Overwriting already existing constructor');
-      }
-
-      this.serializers.set(constructor, serializer);
-    });
-  }
-
-  registerSerializers(serializers) {
-    serializers.forEach(this.registerSerializer, this);
-  }
-
-  removeSerializer(constructor) {
-    return this.serializers.delete(constructor);
-  }
-
-  getSerializer(target) {
-    if (env.mode === 'strict' && hasMonkeyPatchedProp(target, [Symbol.iterator]) === true) {
-      throw new TypeError('Target has a monkey patched property');
+export default class extends Set {
+  add(serializer) {
+    if (Array.isArray(serializer)) {
+      serializer.forEach(super.add, this);
+    } else {
+      super.add(serializer);
     }
+  }
 
-    return this.serializers.get(target[Symbol.species] || target.constructor) ||
-      this.serializers.get(Object.getPrototypeOf(target.constructor)) ||
-      generic;
+  get(instance) {
+    // STRICT: if more then 2 found throw
+    const found = Array.from(this).find(serializer => instance instanceof serializer);
+    if (found !== void 0) return found.serializer;
+    return generic;
   }
 }

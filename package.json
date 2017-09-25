@@ -2,11 +2,12 @@
   "name": "panzerschrank",
   "version": "0.1.1",
   "description": "Panzerschrank - a safe vault for your data",
-  "main": "./sloppy.js",
+  "main": "./index.js",
+  "module": "./module.js",
   "scripts": {
     "test": "jest --cache && node --allow-natives-syntax node_modules/.bin/jest",
     "lint": "eslint --cache ./src ./tests",
-    "install": "rollup -c --environment NODE_ENV:development;rollup -c --environment NODE_ENV:production"
+    "install": "rollup -c --environment NODE_ENV:production"
   },
   "repository": {
     "type": "git",
@@ -33,9 +34,10 @@
   },
   "dependencies": {
     "rollup": "^0.47.2",
-    "rollup-plugin-butternut": "^0.1.0",
     "rollup-plugin-filesize": "^1.4.2",
-    "rollup-plugin-replace": "^1.1.1"
+    "rollup-plugin-replace": "^1.1.1",
+    "rollup-plugin-uglify": "^2.0.1",
+    "uglify-es": "^3.0.28"
   },
   "jest": {
     "collectCoverageFrom": [

@@ -1,12 +1,11 @@
-/* global Window, Document, Node */
+/* global Window, Document, HTMLElement, CharacterData */
 export default [
   {
-    test: typeof window === 'undefined' ? [] : [
-      Window,
-      Document,
-      HTMLElement,
-      CharacterData
-    ],
+    [Symbol.hasInstance](instance) {
+      if (typeof window === 'undefined') return false;
+      return [Window, Document, HTMLElement, CharacterData]
+        .some(constructor => instance instanceof constructor)
+    },
     serializer: pass => pass,
   },
 ];

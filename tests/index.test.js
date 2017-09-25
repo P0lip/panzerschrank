@@ -1,4 +1,5 @@
 import vault from 'src/index';
+import AccessError from 'src/error';
 
 describe('Vault', () => {
   test('get trap', () => {
@@ -14,7 +15,7 @@ describe('Vault', () => {
   test('Symbol.iterator', () => {
     let called = 0;
     const keys = ['foo', 'bar', 'test']
-    const values = ['bar', false, new Date(0)];
+    const values = ['bar', false, JSON.parse(JSON.stringify(new Date(0)))];
     for (const [key, value] of vault({ foo: 'bar', bar: false, test: new Date(0) })) {
       expect(key).toBeDefined();
       expect(key).toBe(keys[called]);
@@ -46,7 +47,7 @@ describe('Vault', () => {
         obj.newProp = str;
       });
     }).toThrow();
-    expect(instance.newProp).toBe(undefined);
+    expect(instance.newProp).toBe(void 0);
 
     expect(() => {
       instance((obj, str) => {
@@ -61,7 +62,7 @@ describe('Vault', () => {
     instance(obj => {
       obj.foo = [];
     });
-    expect(instance.foo).toBe([]);
+    expect(instance.foo).toEqual([]);
 
     instance(obj => {
       obj.newProp = {};
@@ -70,7 +71,7 @@ describe('Vault', () => {
     instance(obj => {
       obj.newProp = [];
     });
-    expect(instance.newProp).toEqual({});
+    expect(instance.newProp).toEqual([]);
   });
 
   test('nested set trap', () => {
@@ -99,15 +100,15 @@ describe('Vault', () => {
 
   test('defineProperty trap', () => {
     const instance = vault({ test: 2 });
-    Object.defineProperty(instance, 'test', {
+    expect(() => Object.defineProperty(instance, 'test', {
       value: 5,
-    });
-    expect(instance.test).toBe(5);
-    Object.defineProperty(instance, 'test2', {
+    })).toThrow(AccessError);
+    expect(instance.test).not.toBe(5);
+    expect(() => Object.defineProperty(instance, 'test2', {
       value: [],
       writable: false,
-    });
-    expect(instance.test2).toEqual([]);
+    })).toThrow(AccessError);
+    expect(instance.test2).not.toEqual([]);
   });
 
 
@@ -115,7 +116,9 @@ describe('Vault', () => {
     const obj = vault({ foo: 'bar', bar: false, lelz: 'true' });
     expect(Object.getOwnPropertyNames(obj)).toEqual(['prototype']);
     expect(Object.keys(obj)).toEqual([]);
-    expect(Object.getOwnPropertySymbols(obj)).toEqual([Symbol.iterator]);
-    expect(Reflect.ownKeys(obj)).toEqual(['prototype', Symbol.iterator]);
+    expect(Object.getOwnPropertySymbols(obj))
+      .toEqual([Symbol.iterator, Symbol.hasInstance, Symbol.toStringTag]);
+    expect(Reflect.ownKeys(obj))
+      .toEqual(['prototype', Symbol.iterator, Symbol.hasInstance, Symbol.toStringTag]);
   })
 });

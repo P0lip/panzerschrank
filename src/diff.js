@@ -1,6 +1,4 @@
-import { HaveSameMap } from './v8';
 import { getType, getSourceCode, toString } from './utils';
-import env from './env';
 
 function toObject(vault) {
   const obj = {};
@@ -11,10 +9,6 @@ function toObject(vault) {
 }
 
 export default function areEqual(lhs, rhs) {
-  if (env.isV8 === true && HaveSameMap(lhs, rhs)) { // NOTE: may return false positive, for instance Object.assign() or object with different order
-    return true;
-  }
-
   const lhsType = getType(lhs);
   const rhsType = getType(rhs);
   if (lhsType !== rhsType) {

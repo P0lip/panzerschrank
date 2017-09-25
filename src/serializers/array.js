@@ -1,9 +1,10 @@
+const TypedArray = Object.getPrototypeOf(new Int8Array(0).constructor);
+
 export default [
   {
-    test: [
-      Array,
-      Object.getPrototypeOf(new Int8Array(0).constructor),
-    ],
+    [Symbol.hasInstance](instance) {
+      return Array.isArray(instance) || instance instanceof TypedArray;
+    },
     serializer: arr => arr.slice(),
   },
 ];

@@ -1,6 +1,6 @@
 export default [
   {
-    test: [RegExp],
-    serializer: regexp => new RegExp(regexp),
+    [Symbol.hasInstance]: instance => instance instanceof RegExp,
+    serializer: regexp => new regexp.constructor(regexp),
   },
 ];

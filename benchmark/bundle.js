@@ -20,7 +20,7 @@ function proxy(obj, serializers) {
   });
 }
 
-function isNative(func) {
+function isNativeFunction(func) {
   /* istanbul ignore if */
   const sourceCode = Function.toString.call(func);
   if (sourceCode === Function.toString.call(func.bind(null))) {
@@ -43,7 +43,7 @@ function isNativeDescriptor(obj, prop) {
   const descriptor = Object.getOwnPropertyDescriptor(obj, prop);
   if (('value' in descriptor) === true) {
     if (typeof descriptor.value === 'function') {
-      return isNative(descriptor.value);
+      return isNativeFunction(descriptor.value);
     }
 
     return true;
@@ -51,11 +51,11 @@ function isNativeDescriptor(obj, prop) {
 
   let native = true;
   if (typeof descriptor.get === 'function') {
-    native = isNative(descriptor.get);
+    native = isNativeFunction(descriptor.get);
   }
 
   if (native === true && typeof descriptor.set === 'function') {
-    native = isNative(descriptor.set);
+    native = isNativeFunction(descriptor.set);
   }
 
   return native;
@@ -63,11 +63,11 @@ function isNativeDescriptor(obj, prop) {
 
 function hasMonkeyPatchedProp(target) {
   try {
-    assert(isNative(target.constructor));
+    assert(isNativeFunction(target.constructor));
     const proto = Object.getPrototypeOf(target);
     Object.getOwnPropertyNames(proto).forEach(key => {
       if (typeof proto[key] === 'function') {
-        assert(isNative(proto[key]));
+        assert(isNativeFunction(proto[key]));
       } else {
         assert(isNativeDescriptor(proto, key));
       }

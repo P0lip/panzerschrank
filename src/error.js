@@ -1,11 +1,13 @@
-export default class extends Error {
-  constructor({ reason, key }) {
-    super(reason);
-    this.name = 'AccessError';
-    this.key = key;
+export class ReadError extends Error {
+  constructor(key) {
+    super(key);
+    this.name = 'ReadError';
   }
 }
 
-export class StrictError extends Error {
-
+export class WriteError extends Error {
+  constructor(key) {
+    super(key);
+    this.name = 'WriteError';
+  }
 }

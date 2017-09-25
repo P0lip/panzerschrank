@@ -1,6 +1,6 @@
 export default [
   {
-    test: [Date],
-    serializer: date => new Date(date),
+    [Symbol.hasInstance]: instance => instance instanceof Date,
+    serializer: date => new date.constructor(date),
   },
 ];
