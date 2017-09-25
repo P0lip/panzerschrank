@@ -55,8 +55,9 @@ export function isNativeDescriptor(obj, prop) {
     .every(item => typeof item !== 'function' || isNative(item));
 }
 
-export function hasMonkeyPatchedProp(target, props) {
-  return props.every(prop => isNativeDescriptor(target, prop));
+export function hasMonkeyPatchedProp(prototype) {
+  return !Reflect.ownKeys(prototype)
+      .every(prop => isNativeDescriptor(prototype, prop));
 }
 
 export function isObject(obj) {

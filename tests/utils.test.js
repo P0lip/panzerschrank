@@ -88,14 +88,17 @@ describe('#assert', () => {
 });
 
 describe('#hasMonkeyPatchedProp', () => {
-  test('returns true when none of passed prop is monkey-patched', () => {
-    const arr = [];
-    arr[Symbol.iterator] = () => {};
-    expect(hasMonkeyPatchedProp(arr, [Symbol.iterator])).toBe(true);
+  test('returns true when some of passed prop is monkey-patched', () => {
+      {
+        const orig = Array.prototype.join; // NOTE: be super-careful with this, maybe subclass Array?
+        Array.prototype.join = () => {};
+        expect(hasMonkeyPatchedProp(Array.prototype)).toBe(true);
+        Array.prototype.join = orig;
+      }
   });
 
   test('returns false when none of passed prop is monkey-patched', () => {
-    expect(hasMonkeyPatchedProp([], [Symbol.iterator])).toBe(false);
+    expect(hasMonkeyPatchedProp(Array)).toBe(false);
   })
 });
 
